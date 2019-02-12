@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using LuckySpin.Models;
 using LuckySpin.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace LuckySpin.Controllers
 {
@@ -57,19 +58,18 @@ namespace LuckySpin.Controllers
 
             //TODO: pass the player.Id to the SpinIt action
             //      (remember, you have to pass it as an object property so use the 'new { }' syntax)
-            return RedirectToAction("SpinIt");
+            return RedirectToAction("SpinIt", new { id = player.Id});
         }
 
         /***
          * SpinIt Action
          **/  
                
-         public IActionResult SpinIt() //TODO: add an int parameter to receive the id
+         public IActionResult SpinIt(int id) //TODO: add an int parameter to receive the id
         {
             //TODO: Use the _dbc and the given id to get the current player object 
             //       from Players, and Include her Spins (use Lamda expressions)
-            var currentPlayer = _dbc.Players
-                              ; //The above is incomplete
+            var currentPlayer = _dbc.Players.Include(p => p.Spins).Single(p => p.Id == id); //The above is incomplete
 
             //TODO: Add the properties to this SpinItViewModel object with data from the currentPlayer
             SpinViewModel spinVM = new SpinViewModel()
@@ -77,9 +77,9 @@ namespace LuckySpin.Controllers
                 A = random.Next(1, 10),
                 B = random.Next(1, 10),
                 C = random.Next(1, 10),
-                //Luck = currentPlayer.Luck,
-                //Balance = currentPlayer.Balance,
-                //FirstName = currentPlayer.FirstName,
+                Luck = currentPlayer.Luck,
+                Balance = currentPlayer.Balance,
+                FirstName = currentPlayer.FirstName,
             };
 
             spinVM.IsWinning = (spinVM.A == spinVM.Luck || spinVM.B == spinVM.Luck || spinVM.C == spinVM.Luck);
@@ -89,6 +89,9 @@ namespace LuckySpin.Controllers
                 ViewBag.Display = "block";
             else
                 ViewBag.Display = "none";
+
+            ViewBag.PlayerId = currentPlayer.Id;
+            
             //TODO Assign a ViewBag.PlayerId item used to assigns a link its route_id in SpinIt View
             //      (see the <a href> for "Current Balance" in the SpinIt.cshtml file)
 
@@ -108,10 +111,10 @@ namespace LuckySpin.Controllers
          public IActionResult LuckList(int id)
         {
             //TODO: use the id to get the current player, including her Spins list
-
+            var currentPlayer = _dbc.Players.Include(p => p.Spins).Single(p => p.Id == id);
 
             //TODO: Send the player's Spins to the View
-            return View();
+            return View(currentPlayer.Spins);
         }
 
     }
