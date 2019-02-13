@@ -91,13 +91,15 @@ namespace LuckySpin.Controllers
                 ViewBag.Display = "none";
 
             ViewBag.PlayerId = currentPlayer.Id;
-            
+
             //TODO Assign a ViewBag.PlayerId item used to assigns a link its route_id in SpinIt View
             //      (see the <a href> for "Current Balance" in the SpinIt.cshtml file)
 
 
             //TODO Compare DB records when adding a generic Spin, as shown below, 
             //     with adding a new Spin to the current player's Spins list
+            currentPlayer.Spins.Add(new Spin { IsWinning = spinVM.IsWinning });
+            
             _dbc.Spins.Add(new Spin { IsWinning = spinVM.IsWinning });
             _dbc.SaveChanges();
 
